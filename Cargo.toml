@@ -1,0 +1,15 @@
+[package]
+name = "vanity_address_generator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+secp256k1 = { version = "0.27.0", features = ["rand"] }
+rand = { version = "0.8.5", features = ["std"] }
+hex = "0.4.3"
+threadpool = "1.8.1"
+regex = "1.10.2"
+lazy_static = "1.4.0"
+chrono = "0.4.31"
+num_cpus = "1.16.0"
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
