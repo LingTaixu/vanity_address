@@ -15,7 +15,7 @@ use storage::save_to_wallet_file;
 
 fn main() {
     // 配置 - 此处可以修改为命令行参数
-    let num_threads: usize = 4; // 使用所有可用CPU
+    let num_threads: usize = num_cpus::get(); // 使用所有可用CPU
     let patterns = vec![
         String::from("00ff00ff00ff00"),
         String::from("ff00ff00ff00"),
