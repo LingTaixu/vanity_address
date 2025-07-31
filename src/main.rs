@@ -1,6 +1,8 @@
 use chrono::Local;
 use num_cpus;
 use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{Duration, Instant};
 use threadpool::ThreadPool;
 
 mod generator;
@@ -36,6 +38,48 @@ fn main() {
     let total_generated = Arc::new(Mutex::new(0u64));
     let total_matches = Arc::new(Mutex::new(0u64));
 
+    // 添加进度显示线程
+    let progress_generated = Arc::clone(&total_generated);
+    let progress_matches = Arc::clone(&total_matches);
+    let start_time = Instant::now();
+    let prev_count = Arc::new(Mutex::new(0u64));
+    let prev_time = Arc::new(Mutex::new(start_time));
+
+    thread::spawn(move || {
+        loop {
+            thread::sleep(Duration::from_secs(5)); // 每5秒更新一次进度
+
+            let current_count = *progress_generated.lock().unwrap();
+            let current_matches = *progress_matches.lock().unwrap();
+            let current_time = Instant::now();
+
+            let mut prev_count_guard = prev_count.lock().unwrap();
+            let mut prev_time_guard = prev_time.lock().unwrap();
+
+            let elapsed = current_time.duration_since(*prev_time_guard).as_secs_f64();
+            let count_diff = current_count - *prev_count_guard;
+            let speed = count_diff as f64 / elapsed;
+
+            *prev_count_guard = current_count;
+            *prev_time_guard = current_time;
+
+            let total_elapsed = current_time.duration_since(start_time).as_secs();
+            let hours = total_elapsed / 3600;
+            let minutes = (total_elapsed % 3600) / 60;
+            let seconds = total_elapsed % 60;
+
+            println!(
+                "[进度] 已生成: {} 地址 | 匹配: {} 地址 | 速度: {:.2} 地址/秒 | 运行时间: {}h{}m{}s",
+                current_count,
+                current_matches,
+                speed,
+                hours,
+                minutes,
+                seconds
+            );
+        }
+    });
+
     for _ in 0..n_jobs {
         let matcher = Arc::clone(&matcher);
         let total_generated = Arc::clone(&total_generated);
@@ -64,5 +108,29 @@ fn main() {
                 }
             });
         }
+    }
+
+    // 等待所有任务完成
+    pool.join();
+
+    // 显示最终统计信息
+    let final_generated = *total_generated.lock().unwrap();
+    let final_matches = *total_matches.lock().unwrap();
+    let final_time = start_time.elapsed().as_secs();
+
+    println!("\n=== 生成完成 ===");
+    println!("总生成地址数: {}", final_generated);
+    println!("匹配地址数: {}", final_matches);
+    println!(
+        "总运行时间: {}h{}m{}s",
+        final_time / 3600,
+        (final_time % 3600) / 60,
+        final_time % 60
+    );
+    if final_matches > 0 {
+        println!(
+            "匹配率: {:.8}%",
+            (final_matches as f64 / final_generated as f64) * 100.0
+        );
     }
 }
