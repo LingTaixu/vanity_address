@@ -15,13 +15,29 @@ use storage::save_to_wallet_file;
 
 fn main() {
     // 配置 - 此处可以修改为命令行参数
-    let num_threads: usize = 10; // 使用所有可用CPU
+    let num_threads: usize = 4; // 使用所有可用CPU
     let patterns = vec![
         String::from("00ff00ff00ff00"),
         String::from("ff00ff00ff00"),
         String::from("bbddbbddbbdd"),
         String::from("cccccccccccc"),
         String::from("aaaaaaaaaaaa"),
+        String::from("aaaaaaaa$"),
+        String::from("bbbbbbbb$"),
+        String::from("cccccccc$"),
+        String::from("dddddddd$"),
+        String::from("eeeeeeee$"),
+        String::from("ffffffff$"),
+        String::from("00000000$"),
+        String::from("11111111$"),
+        String::from("22222222$"),
+        String::from("33333333$"),
+        String::from("44444444$"),
+        String::from("55555555$"),
+        String::from("66666666$"),
+        String::from("77777777$"),
+        String::from("88888888$"),
+        String::from("99999999$"),
     ];
 
     println!("使用 {} 线程启动以太坊漂亮地址生成器", num_threads);
